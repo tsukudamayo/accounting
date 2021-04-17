@@ -116,8 +116,8 @@ def compute_expenses(expenses_df: pd.core.frame.DataFrame) -> np.int64:
 
 
 def main():
-    income_dir = '../../../data/balance/income/income_2020.csv'
-    expenses_dir = '../../../data/balance/expenses/expenses*'
+    income_dir = '../../data/balance/income/income_2020.csv'
+    expenses_dir = '../../data/balance/expenses/expenses*'
     calculator = ExpensesCalculator(income_dir, expenses_dir)
     print('----- income -----')
     calculator.compute_income()
