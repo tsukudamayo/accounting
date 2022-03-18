@@ -17,11 +17,7 @@ class ExpensesCalculator:
     def compute_expense(self):
         expenses_files = glob.glob(self.expenses_dir)
         expenses_df_object = load_expenses_file(expenses_files)
-        # print(expenses_result.columns)
-        # print(type(expenses_result))
-        expenses_df = apply_type_to_expenses_df(expenses_df_object)
-        # print(apply_type_df)
-        # print(apply_type_df['price'].sum())
+        expenses_df = apply_type_to_expense_df(expenses_df_object)
         medical_deduction = compute_medical_deduction(expenses_df)
         print('medical_deduction: ', medical_deduction)
         distributed_expenses = distribute_expenses(expenses_df)
@@ -43,14 +39,26 @@ class ExpensesCalculator:
 
         return self.net_income
 
+    def show_statements(self):
+        # expenses
+        expenses_files = glob.glob(self.expenses_dir)
+        expenses_df_object = load_expenses_file(expenses_files)
+        expenses_df = apply_type_to_expense_df(expenses_df_object)
+        print(expenses_df.groupby("category").sum())
+        # income
+        income_files = glob.glob(self.income_dir)
+        income_df_object = load_expenses_file(income_files)
+        income_df = apply_type_to_income_df(income_df_object)
+        print(income_df.groupby("customer").sum())
 
+        
 def compute_income(income_filepath: str) -> np.int64:
     df = pd.read_csv(income_filepath)
 
     return df.income.sum()
 
 
-def apply_type_to_expenses_df(expenses_df: pd.core.frame.DataFrame) -> pd.core.frame.DataFrame:
+def apply_type_to_expense_df(expenses_df: pd.DataFrame) -> pd.DataFrame:
     expenses_df = expenses_df.astype(
         {
          'timestamp': 'object',
@@ -65,7 +73,21 @@ def apply_type_to_expenses_df(expenses_df: pd.core.frame.DataFrame) -> pd.core.f
     return expenses_df
 
 
-def load_expenses_file(expenses_files: List) -> np.int64:
+def apply_type_to_income_df(income_df: pd.DataFrame) -> pd.DataFrame:
+    income_df = income_df.astype(
+        {
+         "timestamp": "object",
+         "income": "float64",
+         "customer": "object",
+         },
+        
+     )
+    income_df["timestamp"] = pd.to_datetime(income_df["timestamp"])
+
+    return income_df
+
+
+def load_expenses_file(expenses_files: List) -> pd.DataFrame:
     expenses_table_df = pd.concat(
         [pd.read_csv(
             f,
@@ -95,6 +117,18 @@ def load_expenses_file(expenses_files: List) -> np.int64:
 
     return expenses_table_df
 
+def load_income_file(income_files: List) -> pd.DataFrame:
+    expenses_table_df = pd.concat(
+        [pd.read_csv(
+            f,
+            dtype={
+                'date': 'object',
+                'income': 'float64',
+                'customer': 'object',
+            },
+         )
+         for f in expenses_files])
+
 def compute_medical_deduction(expenses_df: pd.core.frame.DataFrame) -> np.int64:
     is_medical_deduction = expenses_df[expenses_df['is_expenses'] == 2]
     print(is_medical_deduction)
@@ -105,19 +139,20 @@ def compute_medical_deduction(expenses_df: pd.core.frame.DataFrame) -> np.int64:
 
 def distribute_expenses(expenses_df: pd.core.frame.DataFrame) -> np.int64:
     is_ditribute = expenses_df[expenses_df['is_expenses'] == 3]
+    distribute_rate = 2
 
-    return np.int64(is_ditribute['price'].sum())
+    return np.int64(is_ditribute['price'].sum() / distribute_rate)
 
 
 def compute_expenses(expenses_df: pd.core.frame.DataFrame) -> np.int64:
-    is_expenses = expenses_df[expenses_df['is_expenses'] == 2]
+    is_expenses = expenses_df[expenses_df['is_expenses'] == 1]
 
     return np.int64(is_expenses['price'].sum())
 
 
 def main():
-    income_dir = '../../data/balance/income/income_2020.csv'
-    expenses_dir = '../../data/balance/expenses/2020/expenses*'
+    income_dir = '../../data/balance/income/income_2021.csv'
+    expenses_dir = '../../data/balance/expenses/2021/expense_*'
     calculator = ExpensesCalculator(income_dir, expenses_dir)
     print('----- income -----')
     calculator.compute_income()
@@ -130,6 +165,9 @@ def main():
     print(calculator.net_income)
     print('----- medical deduction -----')
     print(calculator.medical_deduction)
+    print("----- statements -----")
+    print(calculator.show_statements())
+    
 
 
 if __name__ == "__main__":
