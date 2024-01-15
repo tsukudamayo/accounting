@@ -19,12 +19,13 @@ fn read_income_file(filepath: &str) -> _Result<i32> {
 }
 
 fn compute_income(filepath: &str) -> _Result<i32> {
-    let df_csv = CsvReader::from_path(filepath)?
+    let df = CsvReader::from_path(filepath)?
         .infer_schema(None)
         .has_header(true)
         .finish()?;
-    println!("{}", df_csv);
-    Ok((0))
+    println!("{}", df);
+    let all_income = df["income"].sum()?;
+    Ok(all_income)
 }
 
 #[cfg(test)]
@@ -33,9 +34,9 @@ mod tests {
 
     #[test]
     fn test_compute_income_file() {
-	let filepath = "./data/income_2020.csv";
+	let filepath = "../data/income_xxxx.csv";
 	let test_income = compute_income(filepath);
-	let expected = 6833194;
+	let expected = 1200000;
 	assert_eq!(test_income.unwrap(), expected);
     }
 }
