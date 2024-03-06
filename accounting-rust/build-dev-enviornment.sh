@@ -10,7 +10,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         -v /tmp/.X11-unix:/tmp/.X11-unix \
 	-v $(pwd):/workspace:delegated \
         -e DISPLAY=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}'):0.0 \
-        --name accounting-rust \
+        --name accounting \
         rust-python-dev \
         /bin/bash
     xhost -$(multipass list | grep docker-vm | awk '{print $3}')
@@ -20,7 +20,7 @@ else
         -v /tmp/.X11-unix:/tmp/.X11-unix \
 	-v $(pwd):/workspace:delegated \
         -e DISPLAY=$DISPLAY \
-        --name accounting-rust \
+        --name accounting \
         rust-python-dev \
         /bin/bash
     xhost -local:
