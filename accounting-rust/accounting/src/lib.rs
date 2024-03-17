@@ -1,6 +1,5 @@
-use std::error::Error;
-
-use polars::prelude::{CsvReader, SerReader};
+use std::{error::Error, borrow::Cow, slice::Iter, path::PathBuf};
+use polars::{prelude::{CsvReader, SerReader}, lazy::{frame::IntoLazy, dsl::col}};
 
 type _Result<T> = Result<T, Box<dyn Error>>;
 
@@ -37,9 +36,30 @@ fn show_expenses_each_month(filepath: &str) -> _Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
+fn show_income_each_month(filepath: &str) -> _Result<()> {
+    let df = CsvReader::from_path(filepath)?
+        .infer_schema(None)
+        .has_header(true)
+        .finish()?;
+    println!("{:?}", df);
+    Ok(())
+}
+
+struct Args {
+    /// Input file
+    input: PathBuf,
+    /// Page number
+    page: u32,
+    /// Output file
+    output: PathBuf,
+}
+
 mod tests {
-    use crate::{compute_income, show_expenses_each_month};
+    use std::path::PathBuf;
+
+    use pdf::file::FileOptions;
+
+    use crate::{compute_income, show_income_each_month};
 
     #[test]
     fn test_compute_income_file() {
@@ -50,9 +70,23 @@ mod tests {
     }
 
     #[test]
-    fn test_show_expense_each_month() {
+    fn test_show_income_each_month() {
 	let filepath = "../sample_data/income_xxxx.csv";
-	let result = show_expenses_each_month(filepath);
+	let result = show_income_each_month(filepath);
 	assert!(result.is_ok());
     }
+
+    #[test]
+    fn test_parse_pdf_meisai() {
+	let filepath = PathBuf::from("../sample_data/meisai_202303.pdf");
+	println!("{:?}", filepath);
+	let old_file = FileOptions::uncached().open(&filepath).unwrap();
+	// println!("{:?}", old_file);
+	// let old_page = old_file.get_page(1).expect("no such page");
+	// println!("{:?}", old_page);
+	
+	// assert!(out.contains("ＰＡＹＰＡＬ　＊ＤＡＺＮＪＡＰＡＮＩＮ"));
+    }
+
+    
 }
