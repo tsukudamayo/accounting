@@ -54,18 +54,18 @@ class ExpensesCalculator:
         expenses_files = glob.glob(self.expenses_filepath)
         expenses_df_object = load_expenses_file(expenses_files)
         expenses_df = apply_type_to_expense_df(expenses_df_object)
-        print(expenses_df.groupby("category").sum())
+        print(expenses_df.groupby("category").sum(numeric_only=True))
         # income
         income_files = glob.glob(self.income_filepath)
         income_df_object = load_expenses_file(income_files)
         income_df = apply_type_to_income_df(income_df_object)
-        print(income_df.groupby("customer").sum())
+        print(income_df.groupby("customer").sum(numeric_only=True))
 
         
 def compute_income(income_filepath: str) -> np.int64:
     df = pd.read_csv(income_filepath)
 
-    return df.income.sum()
+    return df.income.sum(numeric_only=True)
 
 
 def show_income_each_month(income_filepath: str) -> None:
@@ -73,7 +73,7 @@ def show_income_each_month(income_filepath: str) -> None:
     df_income_timestamp: pd.DataFrame = df.loc[:, ["timestamp", "income"]]
     df_income_timestamp["timestamp"] = pd.to_datetime(df_income_timestamp["timestamp"])
     df_income_timestamp.set_index(["timestamp"], inplace=True)
-    print(df_income_timestamp.resample(rule="M").sum())
+    print(df_income_timestamp.resample(rule="M").sum(numeric_only=True))
 
 
 def apply_type_to_expense_df(expenses_df: pd.DataFrame) -> pd.DataFrame:
@@ -137,21 +137,23 @@ def load_income_file(income_files: List) -> List[pd.DataFrame]:
 def compute_medical_deduction(expenses_df: pd.DataFrame) -> np.int64:
     is_medical_deduction = expenses_df[expenses_df['is_expenses'] == 2]
     print(is_medical_deduction)
-    sum_medical_deduction = is_medical_deduction['price'].sum()
+    sum_medical_deduction = is_medical_deduction['price'].sum(numeric_only=True)
 
+    if sum_medical_deduction <= 100000:
+        return np.int64(0)
     return np.int64(sum_medical_deduction - 100000)
 
 
 def distribute_expenses(expenses_df: pd.DataFrame, distribute_rate: int) -> np.int64:
     is_ditribute = expenses_df[expenses_df['is_expenses'] == 3]
 
-    return np.int64(is_ditribute['price'].sum() / distribute_rate)
+    return np.int64(is_ditribute['price'].sum(numeric_only=True) / distribute_rate)
 
 
 def compute_expenses(expenses_df: pd.DataFrame) -> np.int64:
     is_expenses = expenses_df[expenses_df['is_expenses'] == 1]
 
-    return np.int64(is_expenses['price'].sum())
+    return np.int64(is_expenses['price'].sum(numeric_only=True))
 
 
 def show_expneses_each_month(
@@ -165,12 +167,12 @@ def show_expneses_each_month(
     df_price_timestamp = is_expenses.loc[:, ["timestamp", "price"]]
     df_price_timestamp["timestamp"] = pd.to_datetime(df_price_timestamp["timestamp"])
     df_price_timestamp.set_index(["timestamp"], inplace=True)
-    print(df_price_timestamp.resample(rule="M").sum())
+    print(df_price_timestamp.resample(rule="M").sum(numeric_only=True))
 
 
 def main():
-    income_filepath = '../../data/balance/income/income_2022.csv'
-    expenses_filepath = '../../data/balance/expenses/2022/expense_*'
+    income_filepath = './data/2023/income/income_2023.csv'
+    expenses_filepath = './data/2023/expenses/white/*.csv'
     calculator = ExpensesCalculator(income_filepath, expenses_filepath)
     print('----- income -----')
     calculator.compute_income()
