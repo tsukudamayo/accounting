@@ -6,7 +6,8 @@ import pandas as pd
 
 
 data_dir = "./data"
-filename = "meisai_202312.pdf"
+filename = "meisai_202408.pdf"
+year = "24"
 filepath = os.path.join(data_dir, filename)
 
 date_description = "お取引日お取引内容"
@@ -27,9 +28,11 @@ black_list = set([
     "",
     "****-****-****-****",
     "＊＊＊　＊＊　様",
+    "1",
 ])
 
 category = None
+year_flg = f"{year}/"
 _amount = []
 _date = []
 _description = []
@@ -53,13 +56,13 @@ for idx_1, page_layout in enumerate(extract_pages(filepath)):
             text = text.replace(" ", "")
             text = text.split("\n")
 
-            #print(text)
+            print(text)
             if text[0] in black_list:
                 continue
 
             if text[0] == date_description:
                 category = date_description
-            elif "23/" in text[0]:
+            elif year_flg in text[0]:
                 category = date_description
             elif text[0] == amount:
                 category = amount
@@ -71,9 +74,15 @@ for idx_1, page_layout in enumerate(extract_pages(filepath)):
             #print("category : ", category)
             
             if category == date_description:
-                if "23/" in text[0]:
+                if year_flg in text[0]:
                     category = date_description
-                    date_format = datetime.strptime(text[0], "%y/%m/%d")
+                    print("text[0] = ", text[0])
+                    # TODO ex: [ご利用明細書 PDF出力日: 2024/08/04]
+                    try:
+                        date_format = datetime.strptime(text[0], "%y/%m/%d")
+                    except ValueError as e:
+                        print(e)
+                        continue
                     date = date_format.strftime("%Y-%m-%d")
                     print(date)
                     _date.append(date)
