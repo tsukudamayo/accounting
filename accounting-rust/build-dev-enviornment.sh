@@ -2,7 +2,7 @@
 
 export DOCKER_BUILDKIT=1
 
-docker build -t rust-python-dev -f dev.arm64.Dockerfile .
+docker build -t accounting -f dev.arm64.Dockerfile .
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     xhost +$(multipass list | grep docker-vm | awk '{print $3}')
@@ -11,7 +11,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	-v $(pwd):/workspace:delegated \
         -e DISPLAY=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}'):0.0 \
         --name accounting \
-        rust-python-dev \
+        accounting \
         /bin/bash
     xhost -$(multipass list | grep docker-vm | awk '{print $3}')
 else
@@ -21,7 +21,7 @@ else
 	-v $(pwd):/workspace:delegated \
         -e DISPLAY=$DISPLAY \
         --name accounting \
-        rust-python-dev \
+        accounting \
         /bin/bash
     xhost -local:
 fi

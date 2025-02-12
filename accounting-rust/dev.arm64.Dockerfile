@@ -4,8 +4,8 @@ ENV HOME /home
 ENV PATH $PATH:$HOME/.cargo/bin
 ENV PATH $PATH:$HOME/.local/bin
 ENV PATH $PATH:$HOME/.elan/bin
-ENV PYTHON_MAJOR_VERSION 3.13.0
-ENV PYTHON_MINOR_VERSION 3.13.0a5
+ENV PYTHON_MAJOR_VERSION 3.12.4
+ENV PYTHON_MINOR_VERSION 3.12.4
 ENV NODE_VERSION 20
 
 WORKDIR /home
@@ -49,11 +49,14 @@ RUN apt update && apt install -y zlib1g-dev \
         ipython jupyterlab \
     && ln -sf /usr/local/bin/python3 /usr/local/bin/python \
     && ln -sf /usr/local/bin/pip3 /usr/local/bin/pip \
-    && rm -rf /home/Python-${PYTHON_VERSION} \
+    && rm -rf /home/Python-${PYTHON_MAJOR_VERSION} \
     && rm /home/Python-${PYTHON_MINOR_VERSION}.tgz
 
 # build lean
-RUN curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | bash -s -- -y \
+RUN curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | bash -s -- -y
+
+# pdftotext install
+RUN apt-get install -y poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
